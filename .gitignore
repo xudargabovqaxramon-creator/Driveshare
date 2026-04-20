@@ -19,8 +19,6 @@ logs
 .DS_Store
 Thumbs.db
 
-# Uploads
-uploads/
 
 # Coverage
 coverage/

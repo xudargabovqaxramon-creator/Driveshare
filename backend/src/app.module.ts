@@ -20,9 +20,12 @@ import { databaseConfig } from './config/database.config';
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      synchronize: true,
-      useFactory: databaseConfig,
       inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+    ...databaseConfig(configService),
+    synchronize: true, // Mana shu yerda bo'lishi shart!
+    autoLoadEntities: true, // Entitylarni avtomat topish uchun
+  }),
     }),
 
     /**

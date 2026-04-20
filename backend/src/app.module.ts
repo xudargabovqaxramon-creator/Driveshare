@@ -23,7 +23,7 @@ import { databaseConfig } from './config/database.config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
     ...databaseConfig(configService),
-    synchronize: true, // Mana shu yerda bo'lishi shart!
+    synchronize: false, // Mana shu yerda bo'lishi shart!
     autoLoadEntities: true, // Entitylarni avtomat topish uchun
   }),
     }),

@@ -33,43 +33,28 @@ async function bootstrap() {
     new TransformInterceptor(),
   );
 
-  /**
-   * Fix 12: CORS — wildcard '*' is forbidden in production.
-   * CORS_ORIGIN must be explicitly configured; a missing value in production
-   * causes a hard startup failure so the misconfiguration cannot be silently
-   * shipped.
-   */
   const corsOrigin = configService.get<string>('CORS_ORIGIN');
   if (isProduction && !corsOrigin) {
     throw new Error(
-      'CORS_ORIGIN must be set in production (e.g. https://yourdomain.com)',
+      'CORS_ORIGIN must be set in production (e.g. https://yourdomain.vercel.app)',
     );
   }
   app.enableCors({
-    origin: corsOrigin ?? '*', // '*' only reached in non-production environments
+    origin: corsOrigin ?? '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 
-  /**
-   * Fix 14: Swagger disabled in production.
-   * Publicly exposing API schema leaks endpoint structure and auth mechanics.
-   * Run NODE_ENV=development (or staging) to access /api/docs.
-   */
+  // Swagger faqat development da
   if (!isProduction) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Car Rental Marketplace API')
       .setDescription('Car Rental Marketplace REST API — development only')
       .setVersion('2.0')
       .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT-auth')
-      .addTag('Auth')
-      .addTag('Users')
-      .addTag('Cars')
-      .addTag('Bookings')
-      .addTag('Payments')
-      .addTag('Notifications')
-      .addTag('Audit Logs')
-      .addTag('Uploads')
+      .addTag('Auth').addTag('Users').addTag('Cars')
+      .addTag('Bookings').addTag('Payments')
+      .addTag('Notifications').addTag('Audit Logs').addTag('Uploads')
       .build();
 
     const document = SwaggerModule.createDocument(app, swaggerConfig);
@@ -79,7 +64,16 @@ async function bootstrap() {
     console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
   }
 
-  await app.listen(port);
-  console.log(`🚀 Application running on: http://localhost:${port}/api/v1`);
+  // Railway healthcheck uchun — global prefix dan OLDIN qo'shiladi
+  // shuning uchun /api/v1/health emas, /health bo'ladi
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.get('/health', (_req: any, res: any) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // '0.0.0.0' — Railway, Docker va boshqa cloud platformalar uchun ZARUR.
+  // Faqat 'localhost' bind bo'lsa, tashqi so'rovlar yetib kelmaydi.
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 Application running on port ${port}`);
 }
 bootstrap();

@@ -10,7 +10,8 @@ dist/
 .env.production
 
 # Uploads
-uploads/
+uploads/*
+!uploads/*.ts
 
 # Coverage
 coverage/

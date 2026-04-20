@@ -1,0 +1,26 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Build
+dist/
+.next/
+out/
+
+# Env
+.env
+.env.*
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+uploads/
+
+# Coverage
+coverage/

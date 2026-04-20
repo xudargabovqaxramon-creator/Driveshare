@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      target: production
+    container_name: car_rental_api
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: car_rental_db
+      JWT_SECRET: change-me-in-production-please
+      JWT_EXPIRATION: 7d
+      UPLOAD_DEST: ./uploads
+      MAX_FILE_SIZE: 5242880
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    restart: unless-stopped
+    networks:
+      - car_rental_net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: car_rental_postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: car_rental_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - car_rental_net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: car_rental_pgadmin
+    ports:
+      - '5050:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - postgres
+    networks:
+      - car_rental_net
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+  uploads_data:
+
+networks:
+  car_rental_net:
+    driver: bridge

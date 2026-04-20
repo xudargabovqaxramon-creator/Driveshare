@@ -20,6 +20,7 @@ import { databaseConfig } from './config/database.config';
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
+      synchronize: true,
       useFactory: databaseConfig,
       inject: [ConfigService],
     }),
